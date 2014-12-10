@@ -36,6 +36,15 @@ class AmazonSESBlock(Block):
 
     """ A block that sends email using Amazon Simple Email Service
 
+    Properties:
+        region (enum): AWS region for SES (us_east_1, us_west_2, or eu_west_1)
+        creds (AWSCreds): Access Key and Secret for AWS
+        sender (str): Email address of the sender. Must be verified with SES.
+        recipients (list): List of email addresses for recipients.
+        message (obj): evaluated for each incoming signal
+            subject (expression): The subject line of the email.
+            body (expression): The body of the email
+
     """
     region = SelectProperty(Region, default=Region.us_east_1, title="AWS Region")
     creds = ObjectProperty(AWSCreds, title="AWS Credentials")
