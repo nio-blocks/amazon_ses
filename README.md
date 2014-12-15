@@ -1,4 +1,4 @@
-amazon_ses
+AmazonSESBlock
 ==========
 
 Block for sending email via Amazon Simple Email Service
