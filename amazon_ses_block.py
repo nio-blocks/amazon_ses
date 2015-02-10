@@ -18,17 +18,19 @@ class Region(Enum):
     us_west_2 = 1
     eu_west_1 = 2
 
-    
+
 class AWSCreds(PropertyHolder):
-    access_key = StringProperty(title="Access Key")
-    access_secret = StringProperty(title="Access Secret")
+    access_key = StringProperty(title="Access Key",
+                                default="[[AMAZON_ACCESS_KEY_ID]]")
+    access_secret = StringProperty(title="Access Secret",
+                                   default="[[AMAZON_SECRET_ACCESS_KEY]]")
 
 
 class Message(PropertyHolder):
     subject = ExpressionProperty(title="Subject", default="<No Value>")
     body = ExpressionProperty(title="Body", default="<No Value>")
 
-    
+
 @command("quota")
 @command("stats")
 @Discoverable(DiscoverableType.block)
@@ -51,7 +53,7 @@ class AmazonSESBlock(Block):
     sender = StringProperty(title="Sender Email")
     recipients = ListProperty(str, title="Recipient Emails")
     message = ObjectProperty(Message, title="Message")
-    
+
     def __init__(self):
         super().__init__()
         self._conn = None
