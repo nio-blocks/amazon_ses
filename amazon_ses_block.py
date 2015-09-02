@@ -88,9 +88,11 @@ class AmazonSESBlock(Block):
 
             try:
                 self._conn.send_email(
-                    self.sender,
-                    subject, body,
-                    self.recipients
+                    source=self.sender,
+                    subject=subject,
+                    body=body,
+                    html_body=body,
+                    to_addresses=self.recipients
                 )
             except Exception as e:
                 self._logger.error(

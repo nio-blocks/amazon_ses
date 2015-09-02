@@ -46,8 +46,9 @@ class TestAmazonSES(NIOBlockTestCase):
         process_event.wait(1)
         self.assertEqual(1, mock_send.call_count)
         mock_send.assert_called_once_with(
-            self.config['sender'],
-            3, 3, self.config['recipients'])
-
+            source=self.config['sender'],
+            subject=3,
+            body=3,
+            to_addresses=self.config['recipients'],
+            html_body=3)
         blk.stop()
-    

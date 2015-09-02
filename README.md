@@ -1,7 +1,9 @@
 AmazonSESBlock
-==========
+==============
 
 Block for sending email via Amazon Simple Email Service
+
+Html message bodies are supported.
 
 Properties
 -----------
