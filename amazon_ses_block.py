@@ -7,6 +7,7 @@ from nio.metadata.properties.object import ObjectProperty
 from nio.metadata.properties.select import SelectProperty
 from nio.metadata.properties.list import ListProperty
 from nio.metadata.properties.string import StringProperty
+from nio.metadata.properties.version import VersionProperty
 from nio.common.command import command
 
 import re
@@ -48,6 +49,7 @@ class AmazonSESBlock(Block):
             body (expression): The body of the email
 
     """
+    version = VersionProperty("0.1.0")
     region = SelectProperty(Region, default=Region.us_east_1, title="AWS Region")
     creds = ObjectProperty(AWSCreds, title="AWS Credentials")
     sender = StringProperty(title="Sender Email")
