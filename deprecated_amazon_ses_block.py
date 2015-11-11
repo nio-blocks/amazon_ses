@@ -27,11 +27,6 @@ class AWSCreds(PropertyHolder):
                                    default="[[AMAZON_SECRET_ACCESS_KEY]]")
 
 
-class Recipient(PropertyHolder):
-    recip = ExpressionProperty(
-        title="Recipient", default="info@n.io", attr_default=AttributeError)
-
-
 class Message(PropertyHolder):
     subject = ExpressionProperty(
         title="Subject", default="<No Value>", attr_default="No Subject")
@@ -42,7 +37,7 @@ class Message(PropertyHolder):
 @command("quota")
 @command("stats")
 @Discoverable(DiscoverableType.block)
-class AmazonSES(Block):
+class AmazonSESBlock(Block):
 
     """ A block that sends email using Amazon Simple Email Service
 
@@ -56,12 +51,12 @@ class AmazonSES(Block):
             body (expression): The body of the email
 
     """
-    version = VersionProperty("0.2.0")
+    version = VersionProperty("0.1.0")
     region = SelectProperty(
         Region, default=Region.us_east_1, title="AWS Region")
     creds = ObjectProperty(AWSCreds, title="AWS Credentials")
     sender = StringProperty(title="Sender Email")
-    recipients = ListProperty(Recipient, title="Recipient Emails")
+    recipients = ListProperty(str, title="Recipient Emails")
     message = ObjectProperty(Message, title="Message")
 
     def __init__(self):
@@ -70,6 +65,11 @@ class AmazonSES(Block):
 
     def configure(self, context):
         super().configure(context)
+
+        # DEPRECATION NOTICE
+        self._logger.error("THIS BLOCK IS DEPRECATED - Consider using "
+                           "the AmazonSES block")
+
         self._conn = connect_to_region(
             re.sub('_', '-', self.region.name),
             aws_access_key_id=self.creds.access_key,
@@ -85,7 +85,7 @@ class AmazonSES(Block):
                 self._logger.exception("Could not compute subject/body")
                 continue
 
-            recipients = self._get_recipients(signal)
+            recipients = self.recipients
             if len(recipients) == 0:
                 # Don't send if we have no recipients
                 continue
@@ -100,17 +100,6 @@ class AmazonSES(Block):
                 )
             except:
                 self._logger.exception("Error sending mail")
-
-    def _get_recipients(self, signal):
-        """ Return a list of destination recipients based on a signal """
-        recipients = []
-        for configured_recip in self.recipients:
-            try:
-                recipients.append(configured_recip.recip(signal))
-            except:
-                self._logger.exception("Could not compute recipient")
-                continue
-        return recipients
 
     def quota(self):
         response = self._conn.get_send_quota().get('GetSendQuotaResponse')
