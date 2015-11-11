@@ -48,3 +48,51 @@ class TestAmazonSES(NIOBlockTestCase):
             body="My Body",
             to_addresses=["recip@mail.com"],
             html_body="My Body")
+
+    def test_send_default_subject(self, connect_func, send_func):
+        """ Test that we use the default subject if it's not found """
+        blk = AmazonSESBlock()
+        self.configure_block(blk, {
+            "recipients": ['recip@mail.com'],
+            "sender": 'sender@mail.com',
+            "message": {
+                "subject": '{{ $sub }}',
+                "body": '{{ $body }}'
+            }
+        })
+
+        blk.process_signals([Signal({
+            "not_a_sub": "My Subject",
+            "body": "My Body"
+        })])
+        self.assertEqual(1, send_func.call_count)
+        send_func.assert_called_once_with(
+            source="sender@mail.com",
+            subject="No Subject",
+            body="My Body",
+            to_addresses=["recip@mail.com"],
+            html_body="My Body")
+
+    def test_send_default_body(self, connect_func, send_func):
+        """ Test that we use the default body if it's not found """
+        blk = AmazonSESBlock()
+        self.configure_block(blk, {
+            "recipients": ['recip@mail.com'],
+            "sender": 'sender@mail.com',
+            "message": {
+                "subject": '{{ $sub }}',
+                "body": '{{ $body }}'
+            }
+        })
+
+        blk.process_signals([Signal({
+            "sub": "My Subject",
+            "not_a_body": "My Body"
+        })])
+        self.assertEqual(1, send_func.call_count)
+        send_func.assert_called_once_with(
+            source="sender@mail.com",
+            subject="My Subject",
+            body="",
+            to_addresses=["recip@mail.com"],
+            html_body="")

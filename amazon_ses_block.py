@@ -1,5 +1,4 @@
 from nio.common.block.base import Block
-from nio.common.signal.base import Signal
 from nio.common.discovery import Discoverable, DiscoverableType
 from nio.metadata.properties.holder import PropertyHolder
 from nio.metadata.properties.expression import ExpressionProperty
@@ -13,6 +12,7 @@ from nio.common.command import command
 import re
 from boto.ses import connect_to_region
 from enum import Enum
+
 
 class Region(Enum):
     us_east_1 = 0
@@ -28,8 +28,10 @@ class AWSCreds(PropertyHolder):
 
 
 class Message(PropertyHolder):
-    subject = ExpressionProperty(title="Subject", default="<No Value>")
-    body = ExpressionProperty(title="Body", default="<No Value>")
+    subject = ExpressionProperty(
+        title="Subject", default="<No Value>", attr_default="No Subject")
+    body = ExpressionProperty(
+        title="Body", default="<No Value>", attr_default="")
 
 
 @command("quota")
@@ -50,7 +52,10 @@ class AmazonSESBlock(Block):
 
     """
     version = VersionProperty("0.1.0")
-    region = SelectProperty(Region, default=Region.us_east_1, title="AWS Region")
+    region = SelectProperty(
+        Region,
+        default=Region.us_east_1,
+        title="AWS Region")
     creds = ObjectProperty(AWSCreds, title="AWS Credentials")
     sender = StringProperty(title="Sender Email")
     recipients = ListProperty(str, title="Recipient Emails")
@@ -72,21 +77,10 @@ class AmazonSESBlock(Block):
         for signal in signals:
             try:
                 subject = self.message.subject(signal)
-            except:
-                subject = self.get_defaults()['message']['subject']
-                self._logger.error(
-                    "Email subject evaluation failed: {0}: {1}".format(
-                        type(e).__name__, str(e))
-                )
-
-            try:
                 body = self.message.body(signal)
-            except Exception as e:
-                body = self.get_defaults()['message']['body']
-                self._logger.error(
-                    "Email body evaluation failed: {0}: {1}".format(
-                        type(e).__name__, str(e))
-                )
+            except:
+                self._logger.exception("Could not compute subject/body")
+                continue
 
             try:
                 self._conn.send_email(
@@ -96,18 +90,18 @@ class AmazonSESBlock(Block):
                     html_body=body,
                     to_addresses=self.recipients
                 )
-            except Exception as e:
-                self._logger.error(
-                    "Error sending mail: {}:{}".format(
-                        type(e).__name__, str(e))
-                )
+            except:
+                self._logger.exception("Error sending mail")
 
     def quota(self):
         response = self._conn.get_send_quota().get('GetSendQuotaResponse')
-        result = response if not response else response.get('GetSendQuotaResult')
+        result = response if not response else response.get(
+            'GetSendQuotaResult')
         return result
 
     def stats(self):
-        response = self._conn.get_send_statistics().get('GetSendStatisticsResponse')
-        result = response if not response else response.get('GetSendStatisticsResult')
+        response = self._conn.get_send_statistics().get(
+            'GetSendStatisticsResponse')
+        result = response if not response else response.get(
+            'GetSendStatisticsResult')
         return result
