@@ -96,3 +96,21 @@ class TestAmazonSES(NIOBlockTestCase):
             body="",
             to_addresses=["recip@mail.com"],
             html_body="")
+
+    def test_no_send_no_recip(self, connect_func, send_func):
+        """ Test that we don't send if we have no recipients """
+        blk = AmazonSESBlock()
+        self.configure_block(blk, {
+            "recipients": [],
+            "sender": 'sender@mail.com',
+            "message": {
+                "subject": '{{ $sub }}',
+                "body": '{{ $body }}'
+            }
+        })
+
+        blk.process_signals([Signal({
+            "sub": "My Subject",
+            "body": "My Body"
+        })])
+        self.assertEqual(0, send_func.call_count)

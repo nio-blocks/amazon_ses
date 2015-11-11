@@ -82,13 +82,18 @@ class AmazonSESBlock(Block):
                 self._logger.exception("Could not compute subject/body")
                 continue
 
+            recipients = self.recipients
+            if len(recipients) == 0:
+                # Don't send if we have no recipients
+                continue
+
             try:
                 self._conn.send_email(
                     source=self.sender,
                     subject=subject,
                     body=body,
                     html_body=body,
-                    to_addresses=self.recipients
+                    to_addresses=recipients
                 )
             except:
                 self._logger.exception("Error sending mail")
