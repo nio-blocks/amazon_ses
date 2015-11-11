@@ -29,7 +29,9 @@ class TestAmazonSES(NIOBlockTestCase):
         """ Test that we send to the right people """
         blk = AmazonSESBlock()
         self.configure_block(blk, {
-            "recipients": ['recip@mail.com'],
+            "recipients": [{
+                'recip': 'recip@mail.com'
+            }],
             "sender": 'sender@mail.com',
             "message": {
                 "subject": '{{ $sub }}',
@@ -53,7 +55,9 @@ class TestAmazonSES(NIOBlockTestCase):
         """ Test that we use the default subject if it's not found """
         blk = AmazonSESBlock()
         self.configure_block(blk, {
-            "recipients": ['recip@mail.com'],
+            "recipients": [{
+                'recip': 'recip@mail.com'
+            }],
             "sender": 'sender@mail.com',
             "message": {
                 "subject": '{{ $sub }}',
@@ -77,7 +81,9 @@ class TestAmazonSES(NIOBlockTestCase):
         """ Test that we use the default body if it's not found """
         blk = AmazonSESBlock()
         self.configure_block(blk, {
-            "recipients": ['recip@mail.com'],
+            "recipients": [{
+                'recip': 'recip@mail.com'
+            }],
             "sender": 'sender@mail.com',
             "message": {
                 "subject": '{{ $sub }}',
@@ -114,3 +120,60 @@ class TestAmazonSES(NIOBlockTestCase):
             "body": "My Body"
         })])
         self.assertEqual(0, send_func.call_count)
+
+    def test_send_expr(self, connect_func, send_func):
+        """ Test that we can send to a value in an expression """
+        blk = AmazonSESBlock()
+        self.configure_block(blk, {
+            "recipients": [{
+                "recip": "{{ $recip }}"
+            }],
+            "sender": 'sender@mail.com',
+            "message": {
+                "subject": '{{ $sub }}',
+                "body": '{{ $body }}'
+            }
+        })
+
+        blk.process_signals([Signal({
+            "sub": "My Subject",
+            "body": "My Body",
+            "recip": "recip@mail.com"
+        })])
+        self.assertEqual(1, send_func.call_count)
+        send_func.assert_called_once_with(
+            source="sender@mail.com",
+            subject="My Subject",
+            body="My Body",
+            to_addresses=["recip@mail.com"],
+            html_body="My Body")
+
+    def test_no_send_bad_recips(self, connect_func, send_func):
+        """ Test that we don't send to any bad recipients """
+        blk = AmazonSESBlock()
+        self.configure_block(blk, {
+            "recipients": [{
+                "recip": "{{ $recip1 }}"
+            }, {
+                "recip": "{{ $recip2 }}"
+            }],
+            "sender": 'sender@mail.com',
+            "message": {
+                "subject": '{{ $sub }}',
+                "body": '{{ $body }}'
+            }
+        })
+
+        blk.process_signals([Signal({
+            "sub": "My Subject",
+            "body": "My Body",
+            "recip2": "recip2@mail.com"
+        })])
+        self.assertEqual(1, send_func.call_count)
+        # We should still send, but only to the second recipient
+        send_func.assert_called_once_with(
+            source="sender@mail.com",
+            subject="My Subject",
+            body="My Body",
+            to_addresses=["recip2@mail.com"],
+            html_body="My Body")

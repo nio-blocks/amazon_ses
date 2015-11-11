@@ -27,6 +27,11 @@ class AWSCreds(PropertyHolder):
                                    default="[[AMAZON_SECRET_ACCESS_KEY]]")
 
 
+class Recipient(PropertyHolder):
+    recip = ExpressionProperty(
+        title="Recipient", default="info@n.io", attr_default=AttributeError)
+
+
 class Message(PropertyHolder):
     subject = ExpressionProperty(
         title="Subject", default="<No Value>", attr_default="No Subject")
@@ -51,14 +56,12 @@ class AmazonSESBlock(Block):
             body (expression): The body of the email
 
     """
-    version = VersionProperty("0.1.0")
+    version = VersionProperty("0.2.0")
     region = SelectProperty(
-        Region,
-        default=Region.us_east_1,
-        title="AWS Region")
+        Region, default=Region.us_east_1, title="AWS Region")
     creds = ObjectProperty(AWSCreds, title="AWS Credentials")
     sender = StringProperty(title="Sender Email")
-    recipients = ListProperty(str, title="Recipient Emails")
+    recipients = ListProperty(Recipient, title="Recipient Emails")
     message = ObjectProperty(Message, title="Message")
 
     def __init__(self):
@@ -82,7 +85,7 @@ class AmazonSESBlock(Block):
                 self._logger.exception("Could not compute subject/body")
                 continue
 
-            recipients = self.recipients
+            recipients = self._get_recipients(signal)
             if len(recipients) == 0:
                 # Don't send if we have no recipients
                 continue
@@ -97,6 +100,17 @@ class AmazonSESBlock(Block):
                 )
             except:
                 self._logger.exception("Error sending mail")
+
+    def _get_recipients(self, signal):
+        """ Return a list of destination recipients based on a signal """
+        recipients = []
+        for configured_recip in self.recipients:
+            try:
+                recipients.append(configured_recip.recip(signal))
+            except:
+                self._logger.exception("Could not compute recipient")
+                continue
+        return recipients
 
     def quota(self):
         response = self._conn.get_send_quota().get('GetSendQuotaResponse')
