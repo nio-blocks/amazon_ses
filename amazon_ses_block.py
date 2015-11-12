@@ -61,7 +61,9 @@ class AmazonSES(Block):
         Region, default=Region.us_east_1, title="AWS Region")
     creds = ObjectProperty(AWSCreds, title="AWS Credentials")
     sender = StringProperty(title="Sender Email")
-    recipients = ListProperty(Recipient, title="Recipient Emails")
+    to_recipients = ListProperty(Recipient, title="To Recipient Emails")
+    cc_recipients = ListProperty(Recipient, title="CC Recipient Emails")
+    bcc_recipients = ListProperty(Recipient, title="BCC Recipient Emails")
     message = ObjectProperty(Message, title="Message")
 
     def __init__(self):
@@ -86,8 +88,8 @@ class AmazonSES(Block):
                 continue
 
             recipients = self._get_recipients(signal)
-            if len(recipients) == 0:
-                # Don't send if we have no recipients
+            if sum([len(recips) for recips in recipients.values()]) == 0:
+                # Don't send if we have no recipients in any of our lists
                 continue
 
             try:
@@ -96,15 +98,30 @@ class AmazonSES(Block):
                     subject=subject,
                     body=body,
                     html_body=body,
-                    to_addresses=recipients
-                )
+                    **recipients)
             except:
                 self._logger.exception("Error sending mail")
 
     def _get_recipients(self, signal):
-        """ Return a list of destination recipients based on a signal """
+        """ Return a dict of destination recipients based on a signal.
+
+        The return format should be ** expandable into the boto send_email
+        function. This will include to, cc, and bcc recipients.
+        """
+        to_recipients = self._get_recipient(signal, self.to_recipients)
+        cc_recipients = self._get_recipient(signal, self.cc_recipients)
+        bcc_recipients = self._get_recipient(signal, self.bcc_recipients)
+
+        return {
+            "to_addresses": to_recipients,
+            "cc_addresses": cc_recipients,
+            "bcc_addresses": bcc_recipients
+        }
+
+    def _get_recipient(self, signal, recip_prop):
+        """ Get the recipients for a configured recipient property """
         recipients = []
-        for configured_recip in self.recipients:
+        for configured_recip in recip_prop:
             try:
                 recip_result = configured_recip.recip(signal)
                 if isinstance(recip_result, list):

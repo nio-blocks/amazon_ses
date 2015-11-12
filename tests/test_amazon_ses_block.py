@@ -29,7 +29,7 @@ class TestAmazonSES(NIOBlockTestCase):
         """ Test that we send to the right people """
         blk = AmazonSES()
         self.configure_block(blk, {
-            "recipients": [{
+            "to_recipients": [{
                 'recip': 'recip@mail.com'
             }],
             "sender": 'sender@mail.com',
@@ -49,13 +49,15 @@ class TestAmazonSES(NIOBlockTestCase):
             subject="My Subject",
             body="My Body",
             to_addresses=["recip@mail.com"],
+            cc_addresses=[],
+            bcc_addresses=[],
             html_body="My Body")
 
     def test_send_default_subject(self, connect_func, send_func):
         """ Test that we use the default subject if it's not found """
         blk = AmazonSES()
         self.configure_block(blk, {
-            "recipients": [{
+            "to_recipients": [{
                 'recip': 'recip@mail.com'
             }],
             "sender": 'sender@mail.com',
@@ -75,13 +77,15 @@ class TestAmazonSES(NIOBlockTestCase):
             subject="No Subject",
             body="My Body",
             to_addresses=["recip@mail.com"],
+            cc_addresses=[],
+            bcc_addresses=[],
             html_body="My Body")
 
     def test_send_default_body(self, connect_func, send_func):
         """ Test that we use the default body if it's not found """
         blk = AmazonSES()
         self.configure_block(blk, {
-            "recipients": [{
+            "to_recipients": [{
                 'recip': 'recip@mail.com'
             }],
             "sender": 'sender@mail.com',
@@ -101,13 +105,15 @@ class TestAmazonSES(NIOBlockTestCase):
             subject="My Subject",
             body="",
             to_addresses=["recip@mail.com"],
+            cc_addresses=[],
+            bcc_addresses=[],
             html_body="")
 
     def test_no_send_no_recip(self, connect_func, send_func):
         """ Test that we don't send if we have no recipients """
         blk = AmazonSES()
         self.configure_block(blk, {
-            "recipients": [],
+            "to_recipients": [],
             "sender": 'sender@mail.com',
             "message": {
                 "subject": '{{ $sub }}',
@@ -125,7 +131,7 @@ class TestAmazonSES(NIOBlockTestCase):
         """ Test that we can send to a value in an expression """
         blk = AmazonSES()
         self.configure_block(blk, {
-            "recipients": [{
+            "to_recipients": [{
                 "recip": "{{ $recip }}"
             }],
             "sender": 'sender@mail.com',
@@ -146,13 +152,15 @@ class TestAmazonSES(NIOBlockTestCase):
             subject="My Subject",
             body="My Body",
             to_addresses=["recip@mail.com"],
+            cc_addresses=[],
+            bcc_addresses=[],
             html_body="My Body")
 
     def test_send_expr_list(self, connect_func, send_func):
         """ Test that we can send to a list in an expression """
         blk = AmazonSES()
         self.configure_block(blk, {
-            "recipients": [{
+            "to_recipients": [{
                 "recip": "{{ $recip }}"
             }],
             "sender": 'sender@mail.com',
@@ -173,13 +181,15 @@ class TestAmazonSES(NIOBlockTestCase):
             subject="My Subject",
             body="My Body",
             to_addresses=["recip1@mail.com", "recip2@mail.com"],
+            cc_addresses=[],
+            bcc_addresses=[],
             html_body="My Body")
 
     def test_no_send_bad_recips(self, connect_func, send_func):
         """ Test that we don't send to any bad recipients """
         blk = AmazonSES()
         self.configure_block(blk, {
-            "recipients": [{
+            "to_recipients": [{
                 "recip": "{{ $recip1 }}"
             }, {
                 "recip": "{{ $recip2 }}"
@@ -203,4 +213,96 @@ class TestAmazonSES(NIOBlockTestCase):
             subject="My Subject",
             body="My Body",
             to_addresses=["recip2@mail.com"],
+            cc_addresses=[],
+            bcc_addresses=[],
+            html_body="My Body")
+
+    def test_send_cc_only(self, connect_func, send_func):
+        """ Test that we can send only CC emails """
+        blk = AmazonSES()
+        self.configure_block(blk, {
+            "cc_recipients": [{
+                'recip': 'recip@mail.com'
+            }],
+            "sender": 'sender@mail.com',
+            "message": {
+                "subject": '{{ $sub }}',
+                "body": '{{ $body }}'
+            }
+        })
+
+        blk.process_signals([Signal({
+            "sub": "My Subject",
+            "body": "My Body"
+        })])
+        self.assertEqual(1, send_func.call_count)
+        send_func.assert_called_once_with(
+            source="sender@mail.com",
+            subject="My Subject",
+            body="My Body",
+            to_addresses=[],
+            cc_addresses=["recip@mail.com"],
+            bcc_addresses=[],
+            html_body="My Body")
+
+    def test_send_bcc_only(self, connect_func, send_func):
+        """ Test that we can send only CC emails """
+        blk = AmazonSES()
+        self.configure_block(blk, {
+            "bcc_recipients": [{
+                'recip': 'recip@mail.com'
+            }],
+            "sender": 'sender@mail.com',
+            "message": {
+                "subject": '{{ $sub }}',
+                "body": '{{ $body }}'
+            }
+        })
+
+        blk.process_signals([Signal({
+            "sub": "My Subject",
+            "body": "My Body"
+        })])
+        self.assertEqual(1, send_func.call_count)
+        send_func.assert_called_once_with(
+            source="sender@mail.com",
+            subject="My Subject",
+            body="My Body",
+            to_addresses=[],
+            cc_addresses=[],
+            bcc_addresses=["recip@mail.com"],
+            html_body="My Body")
+
+    def test_all_three(self, connect_func, send_func):
+        """ Test that we can send to, cc, and bcc emails """
+        blk = AmazonSES()
+        self.configure_block(blk, {
+            "to_recipients": [{
+                'recip': 'to.recip@mail.com'
+            }],
+            "cc_recipients": [{
+                'recip': 'cc.recip@mail.com'
+            }],
+            "bcc_recipients": [{
+                'recip': 'bcc.recip@mail.com'
+            }],
+            "sender": 'sender@mail.com',
+            "message": {
+                "subject": '{{ $sub }}',
+                "body": '{{ $body }}'
+            }
+        })
+
+        blk.process_signals([Signal({
+            "sub": "My Subject",
+            "body": "My Body"
+        })])
+        self.assertEqual(1, send_func.call_count)
+        send_func.assert_called_once_with(
+            source="sender@mail.com",
+            subject="My Subject",
+            body="My Body",
+            to_addresses=["to.recip@mail.com"],
+            cc_addresses=["cc.recip@mail.com"],
+            bcc_addresses=["bcc.recip@mail.com"],
             html_body="My Body")
