@@ -148,6 +148,33 @@ class TestAmazonSES(NIOBlockTestCase):
             to_addresses=["recip@mail.com"],
             html_body="My Body")
 
+    def test_send_expr_list(self, connect_func, send_func):
+        """ Test that we can send to a list in an expression """
+        blk = AmazonSES()
+        self.configure_block(blk, {
+            "recipients": [{
+                "recip": "{{ $recip }}"
+            }],
+            "sender": 'sender@mail.com',
+            "message": {
+                "subject": '{{ $sub }}',
+                "body": '{{ $body }}'
+            }
+        })
+
+        blk.process_signals([Signal({
+            "sub": "My Subject",
+            "body": "My Body",
+            "recip": ["recip1@mail.com", "recip2@mail.com"]
+        })])
+        self.assertEqual(1, send_func.call_count)
+        send_func.assert_called_once_with(
+            source="sender@mail.com",
+            subject="My Subject",
+            body="My Body",
+            to_addresses=["recip1@mail.com", "recip2@mail.com"],
+            html_body="My Body")
+
     def test_no_send_bad_recips(self, connect_func, send_func):
         """ Test that we don't send to any bad recipients """
         blk = AmazonSES()

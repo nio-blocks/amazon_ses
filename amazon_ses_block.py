@@ -106,7 +106,12 @@ class AmazonSES(Block):
         recipients = []
         for configured_recip in self.recipients:
             try:
-                recipients.append(configured_recip.recip(signal))
+                recip_result = configured_recip.recip(signal)
+                if isinstance(recip_result, list):
+                    # Allow the expression to evaluate to a list of recipients
+                    recipients.extend(recip_result)
+                else:
+                    recipients.append(recip_result)
             except:
                 self._logger.exception("Could not compute recipient")
                 continue
