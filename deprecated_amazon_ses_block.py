@@ -27,11 +27,6 @@ class AWSCreds(PropertyHolder):
                                    default="[[AMAZON_SECRET_ACCESS_KEY]]")
 
 
-class Recipient(PropertyHolder):
-    recip = ExpressionProperty(
-        title="Recipient", default="info@n.io", attr_default=AttributeError)
-
-
 class Message(PropertyHolder):
     subject = ExpressionProperty(
         title="Subject", default="<No Value>", attr_default="No Subject")
@@ -42,7 +37,7 @@ class Message(PropertyHolder):
 @command("quota")
 @command("stats")
 @Discoverable(DiscoverableType.block)
-class AmazonSES(Block):
+class AmazonSESBlock(Block):
 
     """ A block that sends email using Amazon Simple Email Service
 
@@ -56,14 +51,12 @@ class AmazonSES(Block):
             body (expression): The body of the email
 
     """
-    version = VersionProperty("0.2.0")
+    version = VersionProperty("0.1.0")
     region = SelectProperty(
         Region, default=Region.us_east_1, title="AWS Region")
     creds = ObjectProperty(AWSCreds, title="AWS Credentials")
     sender = StringProperty(title="Sender Email")
-    to_recipients = ListProperty(Recipient, title="To Recipient Emails")
-    cc_recipients = ListProperty(Recipient, title="CC Recipient Emails")
-    bcc_recipients = ListProperty(Recipient, title="BCC Recipient Emails")
+    recipients = ListProperty(str, title="Recipient Emails")
     message = ObjectProperty(Message, title="Message")
 
     def __init__(self):
@@ -72,6 +65,11 @@ class AmazonSES(Block):
 
     def configure(self, context):
         super().configure(context)
+
+        # DEPRECATION NOTICE
+        self._logger.error("THIS BLOCK IS DEPRECATED - Consider using "
+                           "the AmazonSES block")
+
         self._conn = connect_to_region(
             re.sub('_', '-', self.region.name),
             aws_access_key_id=self.creds.access_key,
@@ -87,9 +85,9 @@ class AmazonSES(Block):
                 self._logger.exception("Could not compute subject/body")
                 continue
 
-            recipients = self._get_recipients(signal)
-            if sum([len(recips) for recips in recipients.values()]) == 0:
-                # Don't send if we have no recipients in any of our lists
+            recipients = self.recipients
+            if len(recipients) == 0:
+                # Don't send if we have no recipients
                 continue
 
             try:
@@ -98,41 +96,10 @@ class AmazonSES(Block):
                     subject=subject,
                     body=body,
                     html_body=body,
-                    **recipients)
+                    to_addresses=recipients
+                )
             except:
                 self._logger.exception("Error sending mail")
-
-    def _get_recipients(self, signal):
-        """ Return a dict of destination recipients based on a signal.
-
-        The return format should be ** expandable into the boto send_email
-        function. This will include to, cc, and bcc recipients.
-        """
-        to_recipients = self._get_recipient(signal, self.to_recipients)
-        cc_recipients = self._get_recipient(signal, self.cc_recipients)
-        bcc_recipients = self._get_recipient(signal, self.bcc_recipients)
-
-        return {
-            "to_addresses": to_recipients,
-            "cc_addresses": cc_recipients,
-            "bcc_addresses": bcc_recipients
-        }
-
-    def _get_recipient(self, signal, recip_prop):
-        """ Get the recipients for a configured recipient property """
-        recipients = []
-        for configured_recip in recip_prop:
-            try:
-                recip_result = configured_recip.recip(signal)
-                if isinstance(recip_result, list):
-                    # Allow the expression to evaluate to a list of recipients
-                    recipients.extend(recip_result)
-                else:
-                    recipients.append(recip_result)
-            except:
-                self._logger.exception("Could not compute recipient")
-                continue
-        return recipients
 
     def quota(self):
         response = self._conn.get_send_quota().get('GetSendQuotaResponse')
