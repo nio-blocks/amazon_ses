@@ -1,16 +1,13 @@
 from unittest.mock import patch
 from nio.common.signal.base import Signal
 from nio.util.support.block_test_case import NIOBlockTestCase
-from boto.ses.connection import SESConnection
 from ..amazon_ses_block import AmazonSES
 
 
-@patch("boto.ses.connection.SESConnection.send_email")
-@patch(AmazonSES.__module__ + '.connect_to_region',
-       return_value=SESConnection())
+@patch(AmazonSES.__module__ + '.connect_to_region')
 class TestAmazonSES(NIOBlockTestCase):
 
-    def test_connect(self, connect_func, send_func):
+    def test_connect(self, connect_func):
         """ Test that we connect with the right credentials """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -25,7 +22,7 @@ class TestAmazonSES(NIOBlockTestCase):
             aws_access_key_id='SAMPLE KEY',
             aws_secret_access_key='SAMPLE SECRET')
 
-    def test_send(self, connect_func, send_func):
+    def test_send(self, connect_func):
         """ Test that we send to the right people """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -43,8 +40,8 @@ class TestAmazonSES(NIOBlockTestCase):
             "sub": "My Subject",
             "body": "My Body"
         })])
-        self.assertEqual(1, send_func.call_count)
-        send_func.assert_called_once_with(
+        self.assertEqual(1, blk._conn.send_email.call_count)
+        blk._conn.send_email.assert_called_once_with(
             source="sender@mail.com",
             subject="My Subject",
             body="My Body",
@@ -53,7 +50,7 @@ class TestAmazonSES(NIOBlockTestCase):
             bcc_addresses=[],
             html_body="My Body")
 
-    def test_send_default_subject(self, connect_func, send_func):
+    def test_send_default_subject(self, connect_func):
         """ Test that we use the default subject if it's not found """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -71,8 +68,8 @@ class TestAmazonSES(NIOBlockTestCase):
             "not_a_sub": "My Subject",
             "body": "My Body"
         })])
-        self.assertEqual(1, send_func.call_count)
-        send_func.assert_called_once_with(
+        self.assertEqual(1, blk._conn.send_email.call_count)
+        blk._conn.send_email.assert_called_once_with(
             source="sender@mail.com",
             subject="No Subject",
             body="My Body",
@@ -81,7 +78,7 @@ class TestAmazonSES(NIOBlockTestCase):
             bcc_addresses=[],
             html_body="My Body")
 
-    def test_send_default_body(self, connect_func, send_func):
+    def test_send_default_body(self, connect_func):
         """ Test that we use the default body if it's not found """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -99,8 +96,8 @@ class TestAmazonSES(NIOBlockTestCase):
             "sub": "My Subject",
             "not_a_body": "My Body"
         })])
-        self.assertEqual(1, send_func.call_count)
-        send_func.assert_called_once_with(
+        self.assertEqual(1, blk._conn.send_email.call_count)
+        blk._conn.send_email.assert_called_once_with(
             source="sender@mail.com",
             subject="My Subject",
             body="",
@@ -109,7 +106,7 @@ class TestAmazonSES(NIOBlockTestCase):
             bcc_addresses=[],
             html_body="")
 
-    def test_no_send_no_recip(self, connect_func, send_func):
+    def test_no_send_no_recip(self, connect_func):
         """ Test that we don't send if we have no recipients """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -125,9 +122,9 @@ class TestAmazonSES(NIOBlockTestCase):
             "sub": "My Subject",
             "body": "My Body"
         })])
-        self.assertEqual(0, send_func.call_count)
+        self.assertEqual(0, blk._conn.send_email.call_count)
 
-    def test_send_expr(self, connect_func, send_func):
+    def test_send_expr(self, connect_func):
         """ Test that we can send to a value in an expression """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -146,8 +143,8 @@ class TestAmazonSES(NIOBlockTestCase):
             "body": "My Body",
             "recip": "recip@mail.com"
         })])
-        self.assertEqual(1, send_func.call_count)
-        send_func.assert_called_once_with(
+        self.assertEqual(1, blk._conn.send_email.call_count)
+        blk._conn.send_email.assert_called_once_with(
             source="sender@mail.com",
             subject="My Subject",
             body="My Body",
@@ -156,7 +153,7 @@ class TestAmazonSES(NIOBlockTestCase):
             bcc_addresses=[],
             html_body="My Body")
 
-    def test_send_expr_list(self, connect_func, send_func):
+    def test_send_expr_list(self, connect_func):
         """ Test that we can send to a list in an expression """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -175,8 +172,8 @@ class TestAmazonSES(NIOBlockTestCase):
             "body": "My Body",
             "recip": ["recip1@mail.com", "recip2@mail.com"]
         })])
-        self.assertEqual(1, send_func.call_count)
-        send_func.assert_called_once_with(
+        self.assertEqual(1, blk._conn.send_email.call_count)
+        blk._conn.send_email.assert_called_once_with(
             source="sender@mail.com",
             subject="My Subject",
             body="My Body",
@@ -185,7 +182,7 @@ class TestAmazonSES(NIOBlockTestCase):
             bcc_addresses=[],
             html_body="My Body")
 
-    def test_no_send_bad_recips(self, connect_func, send_func):
+    def test_no_send_bad_recips(self, connect_func):
         """ Test that we don't send to any bad recipients """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -206,9 +203,9 @@ class TestAmazonSES(NIOBlockTestCase):
             "body": "My Body",
             "recip2": "recip2@mail.com"
         })])
-        self.assertEqual(1, send_func.call_count)
+        self.assertEqual(1, blk._conn.send_email.call_count)
         # We should still send, but only to the second recipient
-        send_func.assert_called_once_with(
+        blk._conn.send_email.assert_called_once_with(
             source="sender@mail.com",
             subject="My Subject",
             body="My Body",
@@ -217,7 +214,7 @@ class TestAmazonSES(NIOBlockTestCase):
             bcc_addresses=[],
             html_body="My Body")
 
-    def test_send_cc_only(self, connect_func, send_func):
+    def test_send_cc_only(self, connect_func):
         """ Test that we can send only CC emails """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -235,8 +232,8 @@ class TestAmazonSES(NIOBlockTestCase):
             "sub": "My Subject",
             "body": "My Body"
         })])
-        self.assertEqual(1, send_func.call_count)
-        send_func.assert_called_once_with(
+        self.assertEqual(1, blk._conn.send_email.call_count)
+        blk._conn.send_email.assert_called_once_with(
             source="sender@mail.com",
             subject="My Subject",
             body="My Body",
@@ -245,7 +242,7 @@ class TestAmazonSES(NIOBlockTestCase):
             bcc_addresses=[],
             html_body="My Body")
 
-    def test_send_bcc_only(self, connect_func, send_func):
+    def test_send_bcc_only(self, connect_func):
         """ Test that we can send only CC emails """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -263,8 +260,8 @@ class TestAmazonSES(NIOBlockTestCase):
             "sub": "My Subject",
             "body": "My Body"
         })])
-        self.assertEqual(1, send_func.call_count)
-        send_func.assert_called_once_with(
+        self.assertEqual(1, blk._conn.send_email.call_count)
+        blk._conn.send_email.assert_called_once_with(
             source="sender@mail.com",
             subject="My Subject",
             body="My Body",
@@ -273,7 +270,7 @@ class TestAmazonSES(NIOBlockTestCase):
             bcc_addresses=["recip@mail.com"],
             html_body="My Body")
 
-    def test_all_three(self, connect_func, send_func):
+    def test_all_three(self, connect_func):
         """ Test that we can send to, cc, and bcc emails """
         blk = AmazonSES()
         self.configure_block(blk, {
@@ -297,8 +294,8 @@ class TestAmazonSES(NIOBlockTestCase):
             "sub": "My Subject",
             "body": "My Body"
         })])
-        self.assertEqual(1, send_func.call_count)
-        send_func.assert_called_once_with(
+        self.assertEqual(1, blk._conn.send_email.call_count)
+        blk._conn.send_email.assert_called_once_with(
             source="sender@mail.com",
             subject="My Subject",
             body="My Body",
