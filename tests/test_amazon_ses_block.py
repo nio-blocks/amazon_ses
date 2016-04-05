@@ -1,6 +1,6 @@
 from unittest.mock import patch
-from nio.common.signal.base import Signal
-from nio.util.support.block_test_case import NIOBlockTestCase
+from nio.signal.base import Signal
+from nio.testing.block_test_case import NIOBlockTestCase
 from ..amazon_ses_block import AmazonSES
 
 
@@ -35,7 +35,6 @@ class TestAmazonSES(NIOBlockTestCase):
                 "body": '{{ $body }}'
             }
         })
-
         blk.process_signals([Signal({
             "sub": "My Subject",
             "body": "My Body"
@@ -49,62 +48,6 @@ class TestAmazonSES(NIOBlockTestCase):
             cc_addresses=[],
             bcc_addresses=[],
             html_body="My Body")
-
-    def test_send_default_subject(self, connect_func):
-        """ Test that we use the default subject if it's not found """
-        blk = AmazonSES()
-        self.configure_block(blk, {
-            "to_recipients": [{
-                'recip': 'recip@mail.com'
-            }],
-            "sender": 'sender@mail.com',
-            "message": {
-                "subject": '{{ $sub }}',
-                "body": '{{ $body }}'
-            }
-        })
-
-        blk.process_signals([Signal({
-            "not_a_sub": "My Subject",
-            "body": "My Body"
-        })])
-        self.assertEqual(1, blk._conn.send_email.call_count)
-        blk._conn.send_email.assert_called_once_with(
-            source="sender@mail.com",
-            subject="No Subject",
-            body="My Body",
-            to_addresses=["recip@mail.com"],
-            cc_addresses=[],
-            bcc_addresses=[],
-            html_body="My Body")
-
-    def test_send_default_body(self, connect_func):
-        """ Test that we use the default body if it's not found """
-        blk = AmazonSES()
-        self.configure_block(blk, {
-            "to_recipients": [{
-                'recip': 'recip@mail.com'
-            }],
-            "sender": 'sender@mail.com',
-            "message": {
-                "subject": '{{ $sub }}',
-                "body": '{{ $body }}'
-            }
-        })
-
-        blk.process_signals([Signal({
-            "sub": "My Subject",
-            "not_a_body": "My Body"
-        })])
-        self.assertEqual(1, blk._conn.send_email.call_count)
-        blk._conn.send_email.assert_called_once_with(
-            source="sender@mail.com",
-            subject="My Subject",
-            body="",
-            to_addresses=["recip@mail.com"],
-            cc_addresses=[],
-            bcc_addresses=[],
-            html_body="")
 
     def test_no_send_no_recip(self, connect_func):
         """ Test that we don't send if we have no recipients """
@@ -117,7 +60,6 @@ class TestAmazonSES(NIOBlockTestCase):
                 "body": '{{ $body }}'
             }
         })
-
         blk.process_signals([Signal({
             "sub": "My Subject",
             "body": "My Body"
@@ -137,7 +79,6 @@ class TestAmazonSES(NIOBlockTestCase):
                 "body": '{{ $body }}'
             }
         })
-
         blk.process_signals([Signal({
             "sub": "My Subject",
             "body": "My Body",
@@ -166,7 +107,6 @@ class TestAmazonSES(NIOBlockTestCase):
                 "body": '{{ $body }}'
             }
         })
-
         blk.process_signals([Signal({
             "sub": "My Subject",
             "body": "My Body",
@@ -197,7 +137,6 @@ class TestAmazonSES(NIOBlockTestCase):
                 "body": '{{ $body }}'
             }
         })
-
         blk.process_signals([Signal({
             "sub": "My Subject",
             "body": "My Body",
@@ -227,7 +166,6 @@ class TestAmazonSES(NIOBlockTestCase):
                 "body": '{{ $body }}'
             }
         })
-
         blk.process_signals([Signal({
             "sub": "My Subject",
             "body": "My Body"
@@ -255,7 +193,6 @@ class TestAmazonSES(NIOBlockTestCase):
                 "body": '{{ $body }}'
             }
         })
-
         blk.process_signals([Signal({
             "sub": "My Subject",
             "body": "My Body"
@@ -289,7 +226,6 @@ class TestAmazonSES(NIOBlockTestCase):
                 "body": '{{ $body }}'
             }
         })
-
         blk.process_signals([Signal({
             "sub": "My Subject",
             "body": "My Body"

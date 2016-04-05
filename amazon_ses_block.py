@@ -1,13 +1,13 @@
-from nio.common.block.base import Block
-from nio.common.discovery import Discoverable, DiscoverableType
-from nio.metadata.properties.holder import PropertyHolder
-from nio.metadata.properties.expression import ExpressionProperty
-from nio.metadata.properties.object import ObjectProperty
-from nio.metadata.properties.select import SelectProperty
-from nio.metadata.properties.list import ListProperty
-from nio.metadata.properties.string import StringProperty
-from nio.metadata.properties.version import VersionProperty
-from nio.common.command import command
+from nio.block.base import Block
+from nio.util.discovery import discoverable
+from nio.properties.holder import PropertyHolder
+from nio.properties import Property
+from nio.properties.object import ObjectProperty
+from nio.properties.select import SelectProperty
+from nio.properties.list import ListProperty
+from nio.properties.string import StringProperty
+from nio.properties.version import VersionProperty
+from nio.command import command
 
 import re
 from boto.ses import connect_to_region
@@ -28,20 +28,20 @@ class AWSCreds(PropertyHolder):
 
 
 class Recipient(PropertyHolder):
-    recip = ExpressionProperty(
-        title="Recipient", default="info@n.io", attr_default=AttributeError)
+    recip = Property(
+        title="Recipient", default="info@n.io")
 
 
 class Message(PropertyHolder):
-    subject = ExpressionProperty(
-        title="Subject", default="<No Value>", attr_default="No Subject")
-    body = ExpressionProperty(
-        title="Body", default="<No Value>", attr_default="")
+    subject = Property(
+        title="Subject", default="<No Value>")
+    body = Property(
+        title="Body", default="<No Value>")
 
 
 @command("quota")
 @command("stats")
-@Discoverable(DiscoverableType.block)
+@discoverable
 class AmazonSES(Block):
 
     """ A block that sends email using Amazon Simple Email Service
@@ -59,12 +59,16 @@ class AmazonSES(Block):
     version = VersionProperty("0.2.0")
     region = SelectProperty(
         Region, default=Region.us_east_1, title="AWS Region")
-    creds = ObjectProperty(AWSCreds, title="AWS Credentials")
-    sender = StringProperty(title="Sender Email")
-    to_recipients = ListProperty(Recipient, title="To Recipient Emails")
-    cc_recipients = ListProperty(Recipient, title="CC Recipient Emails")
-    bcc_recipients = ListProperty(Recipient, title="BCC Recipient Emails")
-    message = ObjectProperty(Message, title="Message")
+    creds = ObjectProperty(
+        AWSCreds, title="AWS Credentials", default=AWSCreds())
+    sender = StringProperty(title="Sender Email", default="")
+    to_recipients = ListProperty(
+        Recipient, title="To Recipient Emails", default=[])
+    cc_recipients = ListProperty(
+        Recipient, title="CC Recipient Emails", default=[])
+    bcc_recipients = ListProperty(
+        Recipient, title="BCC Recipient Emails", default=[])
+    message = ObjectProperty(Message, title="Message", default=Message())
 
     def __init__(self):
         super().__init__()
@@ -73,18 +77,18 @@ class AmazonSES(Block):
     def configure(self, context):
         super().configure(context)
         self._conn = connect_to_region(
-            re.sub('_', '-', self.region.name),
-            aws_access_key_id=self.creds.access_key,
-            aws_secret_access_key=self.creds.access_secret
+            re.sub('_', '-', self.region().name),
+            aws_access_key_id=self.creds().access_key(),
+            aws_secret_access_key=self.creds().access_secret()
         )
 
     def process_signals(self, signals):
         for signal in signals:
             try:
-                subject = self.message.subject(signal)
-                body = self.message.body(signal)
+                subject = self.message().subject(signal)
+                body = self.message().body(signal)
             except:
-                self._logger.exception("Could not compute subject/body")
+                self.logger.exception("Could not compute subject/body")
                 continue
 
             recipients = self._get_recipients(signal)
@@ -94,13 +98,13 @@ class AmazonSES(Block):
 
             try:
                 self._conn.send_email(
-                    source=self.sender,
+                    source=self.sender(),
                     subject=subject,
                     body=body,
                     html_body=body,
                     **recipients)
             except:
-                self._logger.exception("Error sending mail")
+                self.logger.exception("Error sending mail")
 
     def _get_recipients(self, signal):
         """ Return a dict of destination recipients based on a signal.
@@ -108,9 +112,9 @@ class AmazonSES(Block):
         The return format should be ** expandable into the boto send_email
         function. This will include to, cc, and bcc recipients.
         """
-        to_recipients = self._get_recipient(signal, self.to_recipients)
-        cc_recipients = self._get_recipient(signal, self.cc_recipients)
-        bcc_recipients = self._get_recipient(signal, self.bcc_recipients)
+        to_recipients = self._get_recipient(signal, self.to_recipients())
+        cc_recipients = self._get_recipient(signal, self.cc_recipients())
+        bcc_recipients = self._get_recipient(signal, self.bcc_recipients())
 
         return {
             "to_addresses": to_recipients,
@@ -130,7 +134,7 @@ class AmazonSES(Block):
                 else:
                     recipients.append(recip_result)
             except:
-                self._logger.exception("Could not compute recipient")
+                self.logger.exception("Could not compute recipient")
                 continue
         return recipients
 
