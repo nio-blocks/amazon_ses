@@ -1,12 +1,12 @@
 AmazonSES
-==============
+=========
 
 Block for sending email via Amazon Simple Email Service
 
 Html message bodies are supported.
 
 Properties
------------
+----------
 
 -   **region**: AWS region for SES (us_east_1, us_west_2, eu_west_1)
 -   **creds**: An object containing your IAM identity (fields: access_key (str), access_secret (str))
