@@ -8,11 +8,11 @@ Html message bodies are supported.
 Properties
 ----------
 
--   **region**: AWS region for SES (us_east_1, us_west_2, eu_west_1)
--   **creds**: An object containing your IAM identity (fields: access_key (str), access_secret (str))
+-   **region**: AWS region for SES (e.g.: us_east_1)
+-   **creds**: An object containing your IAM identity (access_key: string, access_secret: string)
 -   **sender**: Sender email address. Must be verified with SES. See below for detail.
 -   **recipients**: A list of recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.
--   **message**: An object defining the contents of the emails (fields: subject (expression), body (expression))
+-   **message**: An object defining the contents of the emails (subject: expression, body: expression)
 
 Dependencies
 ------------

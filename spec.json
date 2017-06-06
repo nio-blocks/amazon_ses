@@ -1,0 +1,45 @@
+{
+  "nio/AmazonSES": {
+    "Dependencies": [
+      "-   [boto](https://pypi.python.org/pypi/boto/)"
+    ],
+    "Miscellaneous": {
+      "Verification of email addresses": "Each sender address used in SES must be registered and verified before use. To do so, visit the [AWS console](console.aws.amazon.com), select **Services->SES->Dashboard->Verified Senders->Email Addresses->Verify a New Email Address** and enter the desired address. Wait for the confirmation email and follow the link. You can now send emails from that address using SES!"
+    },
+    "Category": "WebService",
+    "Version": "1.0.0",
+    "Input": "Any list of signals. Messages are constructed by evaluating message.subject and message.body against each signal.",
+    "Properties": {
+      "recipients": {
+        "description": "A list of recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience."
+      },
+      "region": {
+        "e.g.": "us_east_1",
+        "description": "AWS region for SES"
+      },
+      "sender": {
+        "description": "Sender email address. Must be verified with SES. See below for detail."
+      },
+      "creds": {
+        "access_secret": "string",
+        "description": "An object containing your IAM identity",
+        "access_key": "string"
+      },
+      "message": {
+        "body": "expression",
+        "subject": "expression",
+        "description": "An object defining the contents of the emails"
+      }
+    },
+    "Commands": {
+      "quota": {
+        "description": "Returns send-quota information for your SES account."
+      },
+      "stats": {
+        "description": "Returns send, bounce, and complaint statistics for your SES account."
+      }
+    },
+    "Output": "None",
+    "Description": "Block for sending email via Amazon Simple Email Service\nHtml message bodies are supported."
+  }
+}
