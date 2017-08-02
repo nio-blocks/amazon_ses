@@ -1,46 +1,10 @@
 {
-    "nio/AmazonSES": {
-        "Input": {
-            "Description": "Any list of signals. Messages are constructed by evaluating message.subject and message.body against each signal."
-        },
-        "Description": "Block for sending email via Amazon Simple Email Service\nHtml message bodies are supported.",
-        "Commands": {
-            "quota": {
-                "description": "Returns send-quota information for your SES account."
-            },
-            "stats": {
-                "description": "Returns send, bounce, and complaint statistics for your SES account."
-            }
-        },
-        "Category": "WebService",
-        "Output": {
-            "Description": "None"
-        },
-        "Properties": {
-            "message": {
-                "body": "expression",
-                "description": "An object defining the contents of the emails",
-                "subject": "expression"
-            },
-            "region": {
-                "e.g.": "us_east_1",
-                "description": "AWS region for SES"
-            },
-            "creds": {
-                "access_key": "string",
-                "description": "An object containing your IAM identity",
-                "access_secret": "string"
-            },
-            "recipients": {
-                "description": "A list of recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience."
-            },
-            "sender": {
-                "description": "Sender email address. Must be verified with SES. See below for detail."
-            }
-        },
-        "Miscellaneous": {
-            "Verification of email addresses": "Each sender address used in SES must be registered and verified before use. To do so, visit the [AWS console](console.aws.amazon.com), select **Services->SES->Dashboard->Verified Senders->Email Addresses->Verify a New Email Address** and enter the desired address. Wait for the confirmation email and follow the link. You can now send emails from that address using SES!"
-        },
-        "Version": "1.0.0"
-    }
+  "nio/AmazonSES": {
+    "version": "0.0.1",
+    "description": "",
+    "inputs": {},
+    "outputs": {},
+    "properties": {},
+    "commands": {}
+  }
 }
