@@ -1,5 +1,8 @@
+import re
+from boto.ses import connect_to_region
+from enum import Enum
+
 from nio.block.base import Block
-from nio.util.discovery import discoverable
 from nio.properties.holder import PropertyHolder
 from nio.properties import Property
 from nio.properties.object import ObjectProperty
@@ -8,10 +11,6 @@ from nio.properties.list import ListProperty
 from nio.properties.string import StringProperty
 from nio.properties.version import VersionProperty
 from nio.command import command
-
-import re
-from boto.ses import connect_to_region
-from enum import Enum
 
 
 class Region(Enum):
@@ -41,7 +40,6 @@ class Message(PropertyHolder):
 
 @command("quota")
 @command("stats")
-@discoverable
 class AmazonSES(Block):
 
     """ A block that sends email using Amazon Simple Email Service

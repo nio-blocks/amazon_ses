@@ -1,38 +1,34 @@
 AmazonSES
 =========
-
-Block for sending email via Amazon Simple Email Service
-
-Html message bodies are supported.
+Block for sending email via Amazon Simple Email Service.  Html message bodies are supported.
 
 Properties
 ----------
+- **bcc_recipients**: 
+- **cc_recipients**: A list of recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.
+- **creds**: An object containing your IAM identity (access_key: string, access_secret: string)
+- **message**: An object defining the contents of the emails (subject: expression, body: expression)
+- **region**: AWS region for SES (e.g.: us_east_1)
+- **sender**: Sender email address. Must be verified with SES. See below for detail.
+- **to_recipients**: A list of recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.
 
--   **region**: AWS region for SES (e.g.: us_east_1)
--   **creds**: An object containing your IAM identity (access_key: string, access_secret: string)
--   **sender**: Sender email address. Must be verified with SES. See below for detail.
--   **recipients**: A list of recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.
--   **message**: An object defining the contents of the emails (subject: expression, body: expression)
+Inputs
+------
+- **default**: Any list of signals.  Messages are constructed by evaluating message.subject and message.body against each signal.
 
-Dependencies
-------------
-
--   [boto](https://pypi.python.org/pypi/boto/)
+Outputs
+-------
 
 Commands
 --------
+- **quota**: Returns send-quota information for your SES account.
+- **stats**: Returns send, bounce, and complaint statistics for your SES account.
 
--   **quota**: Returns send-quota information for your SES account.
--   **stats**: Returns send, bounce, and complaint statistics for your SES account.
-
-Input
------
-Any list of signals. Messages are constructed by evaluating message.subject and message.body against each signal.
-
-Output
-------
-None
+Dependencies
+------------
+-   [boto](https://pypi.python.org/pypi/boto/)
 
 Verification of email addresses
 -------------------------------
 Each sender address used in SES must be registered and verified before use. To do so, visit the [AWS console](console.aws.amazon.com), select **Services->SES->Dashboard->Verified Senders->Email Addresses->Verify a New Email Address** and enter the desired address. Wait for the confirmation email and follow the link. You can now send emails from that address using SES!
+
