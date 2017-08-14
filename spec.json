@@ -6,13 +6,13 @@
       "bcc_recipients": {
         "title": "BCC Recipient Emails",
         "type": "ListType",
-        "description": "",
+        "description": "A list of bcc recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.",
         "default": []
       },
       "cc_recipients": {
         "title": "CC Recipient Emails",
         "type": "ListType",
-        "description": "A list of recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.",
+        "description": "A list of cc recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.",
         "default": []
       },
       "creds": {

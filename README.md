@@ -4,8 +4,8 @@ Block for sending email via Amazon Simple Email Service.  Html message bodies ar
 
 Properties
 ----------
-- **bcc_recipients**: 
-- **cc_recipients**: A list of recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.
+- **bcc_recipients**: A list of bcc recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.
+- **cc_recipients**: A list of cc recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.
 - **creds**: An object containing your IAM identity (access_key: string, access_secret: string)
 - **message**: An object defining the contents of the emails (subject: expression, body: expression)
 - **region**: AWS region for SES (e.g.: us_east_1)
