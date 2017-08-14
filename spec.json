@@ -1,10 +1,72 @@
 {
   "nio/AmazonSES": {
-    "version": "0.0.1",
-    "description": "",
-    "inputs": {},
+    "version": "0.2.0",
+    "description": "Block for sending email via Amazon Simple Email Service.  Html message bodies are supported.",
+    "properties": {
+      "bcc_recipients": {
+        "title": "BCC Recipient Emails",
+        "type": "ListType",
+        "description": "A list of bcc recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.",
+        "default": []
+      },
+      "cc_recipients": {
+        "title": "CC Recipient Emails",
+        "type": "ListType",
+        "description": "A list of cc recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.",
+        "default": []
+      },
+      "creds": {
+        "title": "AWS Credentials",
+        "type": "ObjectType",
+        "description": "An object containing your IAM identity (access_key: string, access_secret: string)",
+        "default": {
+          "access_key": "[[AMAZON_ACCESS_KEY_ID]]",
+          "access_secret": "[[AMAZON_SECRET_ACCESS_KEY]]"
+        }
+      },
+      "message": {
+        "title": "Message",
+        "type": "ObjectType",
+        "description": "An object defining the contents of the emails (subject: expression, body: expression)",
+        "default": {
+          "subject": "<No Value>",
+          "body": "<No Value>"
+        }
+      },
+      "region": {
+        "title": "AWS Region",
+        "type": "SelectType",
+        "description": "AWS region for SES (e.g.: us_east_1)",
+        "default": 0
+      },
+      "sender": {
+        "title": "Sender Email",
+        "type": "StringType",
+        "description": "Sender email address. Must be verified with SES. See below for detail.",
+        "default": ""
+      },
+      "to_recipients": {
+        "title": "To Recipient Emails",
+        "type": "ListType",
+        "description": "A list of recipient email addresses. These addresses can be expressions. The expressions can also evaluate to lists for your convenience.",
+        "default": []
+      }
+    },
+    "inputs": {
+      "default": {
+        "description": "Any list of signals.  Messages are constructed by evaluating message.subject and message.body against each signal."
+      }
+    },
     "outputs": {},
-    "properties": {},
-    "commands": {}
+    "commands": {
+      "quota": {
+        "params": {},
+        "description": "Returns send-quota information for your SES account."
+      },
+      "stats": {
+        "params": {},
+        "description": "Returns send, bounce, and complaint statistics for your SES account."
+      }
+    }
   }
 }

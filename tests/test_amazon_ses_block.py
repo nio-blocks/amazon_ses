@@ -1,6 +1,8 @@
 from unittest.mock import patch
+
 from nio.signal.base import Signal
 from nio.testing.block_test_case import NIOBlockTestCase
+
 from ..amazon_ses_block import AmazonSES
 
 
