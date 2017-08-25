@@ -2,7 +2,7 @@ import re
 from boto.ses import connect_to_region
 from enum import Enum
 
-from nio.block.base import Block
+from nio import TerminatorBlock
 from nio.properties.holder import PropertyHolder
 from nio.properties import Property
 from nio.properties.object import ObjectProperty
@@ -40,7 +40,7 @@ class Message(PropertyHolder):
 
 @command("quota")
 @command("stats")
-class AmazonSES(Block):
+class AmazonSES(TerminatorBlock):
 
     """ A block that sends email using Amazon Simple Email Service
 
