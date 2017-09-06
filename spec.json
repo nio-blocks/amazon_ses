@@ -2,6 +2,9 @@
   "nio/AmazonSES": {
     "version": "0.2.0",
     "description": "Block for sending email via Amazon Simple Email Service.  Html message bodies are supported.",
+    "categories": [
+      "Notifications"
+    ],
     "properties": {
       "bcc_recipients": {
         "title": "BCC Recipient Emails",
