@@ -1,7 +1,7 @@
 {
   "nio/AmazonSES": {
     "version": "0.2.0",
-    "description": "Block for sending email via Amazon Simple Email Service.  Html message bodies are supported.",
+    "description": "Block for sending email via Amazon Simple Email Service.  HTML message bodies are supported.",
     "categories": [
       "Notifications"
     ],
@@ -45,7 +45,7 @@
       "sender": {
         "title": "Sender Email",
         "type": "StringType",
-        "description": "Sender email address. Must be verified with SES. See below for detail.",
+        "description": "Sender email address. Must be verified with SES.",
         "default": ""
       },
       "to_recipients": {
