@@ -1,6 +1,6 @@
 AmazonSES
 =========
-Block for sending email via Amazon Simple Email Service.  Html message bodies are supported.
+Block for sending email via Amazon Simple Email Service.  HTML message bodies are supported.
 
 Properties
 ----------
