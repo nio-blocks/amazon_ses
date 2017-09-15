@@ -1,7 +1,7 @@
 {
   "nio/AmazonSES": {
     "language": "Python",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "url": "git://github.com/nio-blocks/amazon_ses.git"
   }
 }

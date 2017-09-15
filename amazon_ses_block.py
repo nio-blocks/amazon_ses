@@ -54,7 +54,7 @@ class AmazonSES(TerminatorBlock):
             body (expression): The body of the email
 
     """
-    version = VersionProperty("0.2.0")
+    version = VersionProperty("0.2.1")
     region = SelectProperty(
         Region, default=Region.us_east_1, title="AWS Region")
     creds = ObjectProperty(

@@ -1,6 +1,6 @@
 {
   "nio/AmazonSES": {
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "Block for sending email via Amazon Simple Email Service.  HTML message bodies are supported.",
     "categories": [
       "Notifications"
